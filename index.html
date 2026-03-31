@@ -1,0 +1,1581 @@
+<!doctype html>
+<html lang="th" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Development Log Portfolio - Track your project progress">
+  <title>Dev Log Portfolio</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+*{font-family:'Sarabun','sans-serif'}
+code,.mono{font-family:'JetBrains Mono',monospace}
+html,body{height:100%;margin:0}
+.app-root{height:100%;overflow:auto;background:#fafbfd}
+.toast-container{position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem}
+.toast{padding:.875rem 1.5rem;border-radius:1rem;color:#fff;font-size:.875rem;font-weight:600;animation:slideIn .3s cubic-bezier(.34,.69,.7,1.43),fadeOut .3s ease 2.7s forwards;box-shadow:0 12px 48px rgba(0,0,0,.15);border-left:4px solid}
+.toast-success{background:linear-gradient(135deg,#10b981,#059669);border-left-color:#059669}
+.toast-error{background:linear-gradient(135deg,#ef4444,#dc2626);border-left-color:#dc2626}
+.toast-info{background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-left-color:#1d4ed8}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(-10px)}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+.modal-box{background:#fff;border:1px solid #e5e7eb;border-radius:1.25rem;padding:2rem;max-width:600px;width:90%;max-height:80%;overflow-y:auto;animation:scaleIn .2s ease;box-shadow:0 32px 96px rgba(0,0,0,.12)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.loading-spinner{width:2.5rem;height:2.5rem;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card-enter{animation:cardUp .5s ease both}
+@keyframes cardUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.info-card{background:#fff;border:1px solid #e5e7eb;transition:all .3s cubic-bezier(.34,.69,.7,1.43);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.info-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563eb,#7c3aed);opacity:0;transition:opacity .3s ease}
+.info-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,rgba(37,99,235,.05) 0%,transparent 70%);pointer-events:none}
+.info-card:hover{border-color:#bfdbfe;transform:translateY(-6px);box-shadow:0 25px 50px rgba(37,99,235,.12),0 0 1px rgba(37,99,235,.1)}
+.info-card:hover::before{opacity:1}
+.card-content{position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
+.tag{display:inline-block;padding:.25rem .75rem;border-radius:0.5rem;font-size:.75rem;font-weight:600;letter-spacing:.025em;border:1px solid}
+.tag-feature{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+.tag-bugfix{background:#fecaca;color:#7f1d1d;border-color:#fca5a5}
+.tag-refactor{background:#d1d5db;color:#374151;border-color:#9ca3af}
+.tag-testing{background:#fed7aa;color:#7c2d12;border-color:#fdba74}
+.tag-security{background:#c7d2fe;color:#312e81;border-color:#a5b4fc}
+.tag-default{background:#f3f4f6;color:#4b5563;border-color:#d1d5db}
+.search-glow:focus{box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.print-exclude{break-inside:avoid}
+@media print{
+  .toast-container,.modal-overlay,#addBtn,#refreshBtn,.search-area,header,#viewCards,#viewCalendar{display:none}
+  .app-root{overflow:visible;background:#fff}
+  .info-card{break-inside:avoid;page-break-inside:avoid}
+}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#f3f4f6}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-root w-full" id="appRoot"><!-- Toast Container -->
+   <div class="toast-container" id="toastContainer"></div><!-- Loading Overlay -->
+   <div id="loadingOverlay" class="modal-overlay" style="display:none">
+    <div class="text-center">
+     <div class="loading-spinner mx-auto mb-4"></div>
+     <p class="text-slate-600 text-sm font-medium">กำลังโหลดข้อมูล...</p>
+    </div>
+   </div><!-- Header -->
+   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+     <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+      <div class="flex items-center gap-3">
+       <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg"><i data-lucide="book-open" class="w-5 h-5 text-white"></i>
+       </div>
+       <div>
+        <h1 id="pageTitle" class="text-xl font-bold text-slate-900">Dev Log Portfolio</h1>
+        <p id="authorName" class="text-xs text-slate-500 font-medium">Your Name</p>
+       </div>
+      </div>
+      <div class="flex items-center gap-2"><button id="addBtn" onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all shadow-md hover:shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i><span class="hidden sm:inline">เพิ่ม Log</span></button> <button id="addProjectBtn" onclick="openProjectModal()" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all shadow-md hover:shadow-lg"><i data-lucide="folder-plus" class="w-4 h-4"></i><span class="hidden sm:inline">โปรเจค</span></button> <button id="refreshBtn" onclick="refreshData()" class="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all" title="รีเฟรช"> <i data-lucide="refresh-cw" class="w-4 h-4"></i> </button> <button onclick="window.print()" class="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all hidden sm:block" title="พิมพ์/บันทึกเป็น PDF"> <i data-lucide="printer" class="w-4 h-4"></i> </button>
+      </div>
+     </div><!-- Search Area -->
+     <div class="search-area flex flex-wrap gap-2">
+      <div class="relative flex-1 min-w-[240px]"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i> <input id="searchInput" type="text" placeholder="ค้นหาชื่อแอป, รายละเอียด..." class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 search-glow focus:outline-none focus:bg-white transition-all" oninput="filterCards()">
+      </div><select id="appFilter" onchange="filterCards()" class="px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">ทุกแอป</option> </select> <select id="statusFilter" onchange="filterCards()" class="px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">ทุกสถานะ</option> <option value="in_progress">🔨 กำลังพัฒนา</option> <option value="completed">✅ เสร็จแล้ว</option> <option value="testing">🧪 ทดสอบ</option> <option value="deployed">🚀 Deploy แล้ว</option> <option value="paused">⏸️ พักไว้</option> </select>
+     </div>
+    </div>
+   </header><!-- Stats Bar -->
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+     <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+      <p class="text-xs font-semibold text-blue-600 mb-1">Total Logs</p>
+      <p class="text-3xl font-bold text-blue-900" id="statTotal">0</p>
+     </div>
+     <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
+      <p class="text-xs font-semibold text-indigo-600 mb-1">แอปทั้งหมด</p>
+      <p class="text-3xl font-bold text-indigo-900" id="statApps">0</p>
+     </div>
+     <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
+      <p class="text-xs font-semibold text-emerald-600 mb-1">วันนี้</p>
+      <p class="text-3xl font-bold text-emerald-900" id="statToday">0</p>
+     </div>
+     <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
+      <p class="text-xs font-semibold text-amber-600 mb-1">สัปดาห์นี้</p>
+      <p class="text-3xl font-bold text-amber-900" id="statWeek">0</p>
+     </div>
+    </div>
+   </div><!-- Cards Grid -->
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+    <!-- View Toggles -->
+    <div class="flex gap-2 mb-6 flex-wrap">
+     <button id="viewCards" onclick="switchView('cards')" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all">📋 บัตร</button> <button id="viewCalendar" onclick="switchView('calendar')" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all">📅 ปฏิทิน</button>
+    </div><!-- Cards View -->
+    <div id="cardsView">
+     <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <p id="emptyMsg" class="col-span-full text-center text-slate-500 py-20 text-sm">ยังไม่มีบันทึกการพัฒนา — กดปุ่ม "เพิ่ม Log" เพื่อเริ่มต้น</p>
+     </div>
+    </div><!-- Calendar View -->
+    <div id="calendarView" style="display:none">
+     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+       <button onclick="prevMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+       <h3 id="monthTitle" class="text-lg font-bold">January 2024</h3><button onclick="nextMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-4">
+       <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+        <!-- Calendar days will be rendered here -->
+       </div>
+       <div id="calendarLegend" class="mt-6 pt-4 border-t border-slate-200">
+        <p class="text-sm font-semibold text-slate-900 mb-3">สถิติการบันทึกในเดือนนี้</p>
+        <div id="monthStats" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+         <!-- Stats will be rendered here -->
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Add/Edit Modal -->
+   <div id="addModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAddModal()">
+    <div class="modal-box">
+     <div class="flex items-center justify-between mb-5">
+      <h2 class="text-xl font-bold text-slate-900" id="modalTitle">เพิ่มบันทึกการพัฒนา</h2><button onclick="closeAddModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
+     </div>
+     <form id="logForm" onsubmit="submitLog(event)"><input type="hidden" id="editId" value="">
+      <div class="space-y-4">
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">ชื่อแอป / โปรเจค *</label>
+        <div class="flex gap-2">
+         <select id="fAppName" required class="flex-1 px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"> <option value="">-- เลือกโปรเจค --</option> </select> <button type="button" onclick="showNewProjectForm()" class="px-4 py-2.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-medium transition-all text-sm"><i data-lucide="plus" class="w-4 h-4"></i></button>
+        </div>
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">เวอร์ชัน</label> <input id="fVersion" type="text" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น 1.0.0">
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">สรุปสิ่งที่ทำ *</label> <textarea id="fSummary" required rows="3" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="อธิบายสิ่งที่พัฒนาวันนี้..."></textarea>
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">แท็ก <span class="text-slate-500 font-normal">(คั่นด้วยคอมมา)</span></label> <input id="fTags" type="text" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น feature, bugfix, refactor, security">
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">สถานะ</label>
+        <div class="flex flex-wrap gap-3">
+         <label class="flex items-center gap-2 cursor-pointer"> <input type="radio" name="status" value="in_progress" id="fStatus_progress" checked class="w-4 h-4 text-blue-600"> <span class="text-sm">🔨 กำลังพัฒนา</span> </label> <label class="flex items-center gap-2 cursor-pointer"> <input type="radio" name="status" value="completed" id="fStatus_completed" class="w-4 h-4 text-emerald-600"> <span class="text-sm">✅ เสร็จแล้ว</span> </label> <label class="flex items-center gap-2 cursor-pointer"> <input type="radio" name="status" value="testing" id="fStatus_testing" class="w-4 h-4 text-amber-600"> <span class="text-sm">🧪 ทดสอบ</span> </label> <label class="flex items-center gap-2 cursor-pointer"> <input type="radio" name="status" value="deployed" id="fStatus_deployed" class="w-4 h-4 text-purple-600"> <span class="text-sm">🚀 Deploy แล้ว</span> </label> <label class="flex items-center gap-2 cursor-pointer"> <input type="radio" name="status" value="paused" id="fStatus_paused" class="w-4 h-4 text-slate-600"> <span class="text-sm">⏸️ พักไว้</span> </label>
+        </div>
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-2">ข้อมูลเพิ่มเติม <span class="text-slate-500 font-normal">(เพิ่ม/ลดได้)</span></label>
+        <div id="extraFields" class="space-y-2 mb-2"></div><button type="button" onclick="addExtraField()" class="text-sm px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-medium transition-all"><i data-lucide="plus" class="w-3 h-3 inline mr-1"></i>เพิ่มฟิลด์</button>
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">รหัสผ่าน *</label> <input id="fPassword" type="password" required class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="รหัสผ่านสำหรับบันทึก">
+       </div>
+      </div>
+      <div class="flex gap-3 mt-6"><button type="submit" id="submitBtn" class="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md"><i data-lucide="save" class="w-4 h-4"></i> บันทึก </button> <button type="button" onclick="closeAddModal()" class="px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-all">ยกเลิก</button>
+      </div>
+     </form>
+    </div>
+   </div><!-- Detail Modal -->
+   <div id="detailModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDetailModal()">
+    <div class="modal-box max-w-2xl max-h-[70vh] overflow-y-auto">
+     <div class="flex items-center justify-between mb-4 sticky -top-8 -mx-8 px-8 py-4 bg-white border-b border-slate-200">
+      <h2 class="text-xl font-bold text-slate-900" id="detailTitle">รายละเอียด</h2><button onclick="closeDetailModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
+     </div>
+     <div id="detailContent" class="space-y-4 text-sm text-slate-700"></div>
+     <div class="mt-6 flex gap-2 pt-4 border-t border-slate-200"><button onclick="editFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-all"><i data-lucide="edit" class="w-4 h-4"></i> แก้ไข</button> <button onclick="deleteFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> ลบ</button>
+     </div>
+    </div>
+   </div><!-- Project Modal -->
+   <div id="projectModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeProjectModal()">
+    <div class="modal-box max-w-2xl">
+     <div class="flex items-center justify-between mb-5">
+      <h2 class="text-xl font-bold text-slate-900" id="projectModalTitle">สร้างโปรเจคใหม่</h2><button onclick="closeProjectModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
+     </div>
+     <form id="projectForm" onsubmit="submitProject(event)"><input type="hidden" id="editProjectId" value="">
+      <div class="space-y-4">
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">ชื่อโปรเจค *</label> <input id="pName" type="text" required class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น MyApp, API Gateway">
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">รายละเอียด</label> <textarea id="pDescription" rows="2" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="อธิบายโปรเจค..."></textarea>
+       </div>
+       <div class="grid grid-cols-2 gap-4">
+        <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">วันเริ่มพัฒนา</label> <input id="pStartDate" type="date" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+        </div>
+        <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">Tech Stack</label> <input id="pTechStack" type="text" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น Node.js, React, PostgreSQL">
+        </div>
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">Tags <span class="text-slate-500 font-normal">(frontend, backend, devops, etc.)</span></label> <input id="pTags" type="text" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น frontend, backend, devops">
+       </div>
+      </div>
+      <div class="flex gap-3 mt-6"><button type="submit" id="submitProjectBtn" class="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md"><i data-lucide="save" class="w-4 h-4"></i> บันทึก </button> <button type="button" onclick="closeProjectModal()" class="px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-all">ยกเลิก</button>
+      </div>
+     </form>
+    </div>
+   </div>
+   <div id="deleteModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDeleteModal()">
+    <div class="modal-box max-w-sm text-center">
+     <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-red-600"></i>
+     </div>
+     <h3 class="text-lg font-bold text-slate-900 mb-2">ยืนยันการลบ?</h3>
+     <p class="text-slate-600 text-sm mb-5">การลบบันทึกนี้ไม่สามารถกู้คืนได้</p>
+     <div><label class="block text-sm text-slate-700 font-medium mb-1.5 text-left">รหัสผ่าน</label> <input id="deletePassword" type="password" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all mb-5">
+     </div>
+     <div class="flex gap-3 justify-center"><button onclick="confirmDelete()" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-all">ลบเลย</button> <button onclick="closeDeleteModal()" class="px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-all">ยกเลิก</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+// ===== CONFIG =====
+const GAS_URL = '';
+
+// ===== STATE =====
+let allLogs = [];
+let allProjects = [];
+let currentDetailLog = null;
+let cache = { data: null, ts: 0, ttl: 60000 };
+let currentView = 'cards';
+let currentCalendarMonth = new Date();
+let masterPassword = null;
+let extraFieldCount = 0;
+let currentMode = 'logs'; // 'logs' or 'projects'
+
+// ===== ELEMENT SDK =====
+const defaultConfig = {
+  page_title: 'Dev Log Portfolio',
+  company_name: 'Your Name',
+  master_password: ''
+};
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const title = document.getElementById('pageTitle');
+    const author = document.getElementById('authorName');
+    title.textContent = config.page_title || defaultConfig.page_title;
+    author.textContent = config.company_name || defaultConfig.company_name;
+  },
+  mapToCapabilities: (config) => ({
+    recolorables: [],
+    borderables: [],
+    fontEditable: undefined,
+    fontSizeable: undefined
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['page_title', config.page_title || defaultConfig.page_title],
+    ['company_name', config.company_name || defaultConfig.company_name]
+  ])
+});
+
+// ===== DATA SDK =====
+const dataHandler = {
+  onDataChanged(data) {
+    // แยก projects และ logs จากข้อมูล unified
+    allProjects = (data || []).filter(r => r.record_type === 'project');
+    allLogs = (data || []).filter(r => r.record_type === 'log');
+    updateProjectFilter();
+    filterCards();
+  }
+};
+
+async function initDataSDK() {
+  const result = await window.dataSdk.init(dataHandler);
+  if (!result.isOk) {
+    console.error('Failed to init Data SDK:', result.error);
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ===== LOADING =====
+function showLoading(show) {
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+// ===== DATA SDK =====
+const dataHandler = {
+  onDataChanged(data) {
+    allProjects = (data || []).filter(r => r.record_type === 'project');
+    allLogs = (data || []).filter(r => r.record_type === 'log');
+    updateProjectFilter();
+    filterCards();
+  }
+};
+
+async function initDataSDK() {
+  const result = await window.dataSdk.init(dataHandler);
+  if (!result.isOk) {
+    console.error('Failed to init Data SDK:', result.error);
+    renderDemo();
+  } else {
+    renderAll();
+  }
+}
+
+// ===== RENDER =====
+const statusMap = {
+  in_progress: { emoji: '🔨', label: 'กำลังพัฒนา', class: 'bg-blue-100 text-blue-800 border-blue-300' },
+  completed: { emoji: '✅', label: 'เสร็จแล้ว', class: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  testing: { emoji: '🧪', label: 'ทดสอบ', class: 'bg-amber-100 text-amber-800 border-amber-300' },
+  deployed: { emoji: '🚀', label: 'Deploy แล้ว', class: 'bg-purple-100 text-purple-800 border-purple-300' },
+  paused: { emoji: '⏸️', label: 'พักไว้', class: 'bg-slate-100 text-slate-800 border-slate-300' }
+};
+
+function tagColorClass(tag) {
+  const t = tag.toLowerCase().trim();
+  if (t.includes('feature')) return 'tag-feature';
+  if (t.includes('bug') || t.includes('fix')) return 'tag-bugfix';
+  if (t.includes('refactor')) return 'tag-refactor';
+  if (t.includes('test')) return 'tag-testing';
+  if (t.includes('security')) return 'tag-security';
+  return 'tag-default';
+}
+
+function renderAll() {
+  updateStats();
+  updateAppFilter();
+  filterCards();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allLogs.length;
+  const apps = new Set(allLogs.map(l => l.app_name));
+  document.getElementById('statApps').textContent = apps.size;
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('statToday').textContent = allLogs.filter(l => (l.date || '').slice(0, 10) === today).length;
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  document.getElementById('statWeek').textContent = allLogs.filter(l => (l.date || '') >= weekAgo).length;
+}
+
+function updateAppFilter() {
+  const sel = document.getElementById('appFilter');
+  const current = sel.value;
+  const apps = [...new Set(allLogs.map(l => l.app_name))].sort();
+  sel.innerHTML = '<option value="">ทุกแอป</option>' + apps.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  sel.value = current;
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const app = document.getElementById('appFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  let filtered = allLogs;
+  if (app) filtered = filtered.filter(l => l.app_name === app);
+  if (status) filtered = filtered.filter(l => l.status === status);
+  if (q) filtered = filtered.filter(l =>
+    (l.app_name || '').toLowerCase().includes(q) ||
+    (l.summary || '').toLowerCase().includes(q) ||
+    (l.tags || '').toLowerCase().includes(q)
+  );
+  filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  renderCards(filtered);
+}
+
+function renderCards(logs) {
+  const grid = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyMsg');
+  if (!logs.length) {
+    grid.innerHTML = '';
+    grid.appendChild(empty);
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = logs.map((log, i) => {
+    const st = statusMap[log.status] || statusMap.in_progress;
+    const tags = (log.tags || '').split(',').filter(t => t.trim()).map(t => {
+      const tagText = t.trim();
+      return `<span class="tag ${tagColorClass(tagText)}">${esc(tagText)}</span>`;
+    }).join('');
+    const info = parseInfo(log.info);
+    const extraKeys = Object.keys(info).slice(0, 2).map(k =>
+      `<div class="flex justify-between py-1.5 border-b border-slate-200"><span class="text-slate-600 text-xs">${esc(k)}</span><span class="text-slate-800 mono text-xs font-medium">${esc(String(info[k]).slice(0,25))}</span></div>`
+    ).join('');
+    const dayOfWeek = formatDayOfWeek(log.date);
+    const dateDisplay = formatDateOnly(log.date);
+    return `<div class="info-card rounded-xl p-5 cursor-pointer card-enter shadow-sm" style="animation-delay:${i*40}ms" onclick='openDetail(${log.id})'>
+      <div class="card-content">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3 flex-1">
+            <span class="text-3xl">${st.emoji}</span>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-slate-900 text-base truncate">${esc(log.app_name)}</h3>
+              ${log.version ? `<span class="mono text-xs text-slate-500 font-medium">v${esc(log.version)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <p class="text-slate-700 text-sm mb-4 line-clamp-3 leading-relaxed font-medium">${esc(log.summary)}</p>
+        <div class="flex flex-wrap gap-1.5 mb-4">${tags}<span class="tag border ${st.class}">${st.label}</span></div>
+        ${extraKeys ? `<div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-3 mb-4 text-xs border border-slate-200 space-y-1">${extraKeys}</div>` : ''}
+      </div>
+      <div class="pt-4 border-t border-slate-200 mt-auto">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-slate-600">
+            <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+            <span class="text-xs font-semibold">${dateDisplay}</span>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">${dayOfWeek}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function parseInfo(str) {
+  if (!str) return {};
+  try { return JSON.parse(str); } catch(e) { return {}; }
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  try {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return d; }
+}
+
+function formatDateOnly(d) {
+  if (!d) return '-';
+  try {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch(e) { return d; }
+}
+
+function formatDayOfWeek(d) {
+  if (!d) return '';
+  try {
+    const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+    const dt = new Date(d);
+    return days[dt.getDay()];
+  } catch(e) { return ''; }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// ===== DETAIL =====
+function openDetail(id) {
+  const log = allLogs.find(l => l.id == id);
+  if (!log) return;
+  currentDetailLog = log;
+  const st = statusMap[log.status] || statusMap.in_progress;
+  const info = parseInfo(log.info);
+  const infoHtml = Object.keys(info).length ? Object.entries(info).map(([k,v]) =>
+    `<div class="flex justify-between py-2 border-b border-slate-200"><span class="text-slate-700 font-medium">${esc(k)}</span><span class="text-slate-900 mono text-sm font-semibold">${esc(String(v))}</span></div>`
+  ).join('') : '<p class="text-slate-500 text-sm italic">ไม่มีข้อมูลเพิ่มเติม</p>';
+
+  document.getElementById('detailTitle').textContent = log.app_name;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">${st.emoji}</span>
+          <div>
+            <h3 class="font-bold text-slate-900 text-lg">${esc(log.app_name)}</h3>
+            ${log.version ? `<p class="mono text-xs text-slate-600">v${esc(log.version)}</p>` : ''}
+          </div>
+        </div>
+        <span class="tag border-2 ${st.class} text-sm font-bold">${st.label}</span>
+      </div>
+      <p class="text-slate-700 leading-relaxed text-base">${esc(log.summary)}</p>
+    </div>
+    
+    <div class="space-y-2">
+      <p class="text-slate-700 font-semibold text-sm">Tags:</p>
+      <div class="flex flex-wrap gap-2">${(log.tags||'').split(',').filter(t=>t.trim()).map(t=>`<span class="tag ${tagColorClass(t.trim())}">${esc(t.trim())}</span>`).join('')}</div>
+    </div>
+    
+    ${Object.keys(info).length ? `
+    <div class="border-t-2 border-slate-200 pt-4">
+      <p class="text-slate-700 font-semibold text-sm mb-3">ข้อมูลเพิ่มเติม:</p>
+      <div class="bg-slate-50 rounded-lg p-4 text-xs">${infoHtml}</div>
+    </div>
+    ` : ''}
+    
+    <div class="flex items-center gap-2 pt-2 text-slate-600 text-sm">
+      <i data-lucide="calendar" class="w-4 h-4"></i> 
+      <span>${esc(formatDate(log.date))}</span>
+    </div>
+  `;
+  document.getElementById('detailModal').style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+function editFromDetail() {
+  if (!currentDetailLog) return;
+  closeDetailModal();
+  openAddModal(currentDetailLog);
+}
+
+function deleteFromDetail() {
+  if (!currentDetailLog) return;
+  closeDetailModal();
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('deletePassword').value = '';
+}
+
+function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+
+async function confirmDelete() {
+  const pw = document.getElementById('deletePassword').value;
+  if (!pw) { showToast('กรุณาใส่รหัสผ่าน', 'error'); return; }
+  if (!currentDetailLog) return;
+  showLoading(true);
+  closeDeleteModal();
+  try {
+    const result = await window.dataSdk.delete(currentDetailLog);
+    if (result.isOk) {
+      showToast('ลบสำเร็จ', 'success');
+    } else {
+      showToast('ลบไม่สำเร็จ', 'error');
+      showLoading(false);
+    }
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด', 'error');
+    showLoading(false);
+  }
+}
+
+// ===== ADD/EDIT =====
+function getExtraFields() {
+  const obj = {};
+  document.querySelectorAll('#extraFields > div').forEach(field => {
+    const key = field.querySelector('[data-key]')?.value?.trim();
+    const value = field.querySelector('[data-value]')?.value?.trim();
+    if (key && value) {
+      obj[key] = value;
+    }
+  });
+  return obj;
+}
+
+function addExtraField() {
+  const container = document.getElementById('extraFields');
+  const id = 'extra_' + (++extraFieldCount);
+  const field = document.createElement('div');
+  field.id = id;
+  field.className = 'flex gap-2 items-start';
+  field.innerHTML = `
+    <input type="text" placeholder="ชื่อ" class="flex-1 px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" data-key>
+    <input type="text" placeholder="ค่า" class="flex-1 px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" data-value>
+    <button type="button" onclick="document.getElementById('${id}').remove()" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+  `;
+  container.appendChild(field);
+  lucide.createIcons();
+}
+
+function renderExtraFields(info) {
+  const container = document.getElementById('extraFields');
+  container.innerHTML = '';
+  extraFieldCount = 0;
+  if (Object.keys(info).length === 0) {
+    addExtraField();
+    return;
+  }
+  Object.entries(info).forEach(([k, v]) => {
+    const id = 'extra_' + (++extraFieldCount);
+    const field = document.createElement('div');
+    field.id = id;
+    field.className = 'flex gap-2 items-start';
+    field.innerHTML = `
+      <input type="text" placeholder="ชื่อ" class="flex-1 px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" data-key value="${esc(k)}">
+      <input type="text" placeholder="ค่า" class="flex-1 px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" data-value value="${esc(String(v))}">
+      <button type="button" onclick="document.getElementById('${id}').remove()" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+    `;
+    container.appendChild(field);
+  });
+  lucide.createIcons();
+}
+
+function openAddModal(log) {
+  const m = document.getElementById('addModal');
+  document.getElementById('modalTitle').textContent = log ? 'แก้ไขบันทึก' : 'เพิ่มบันทึกการพัฒนา';
+  document.getElementById('editId').value = log ? log.id : '';
+  document.getElementById('fAppName').value = log ? log.name : '';
+  document.getElementById('fVersion').value = log ? (log.version || '') : '';
+  document.getElementById('fSummary').value = log ? log.summary : '';
+  document.getElementById('fTags').value = log ? (log.tags || '') : '';
+  const status = log ? (log.status || 'in_progress') : 'in_progress';
+  document.getElementById('fStatus_' + (status === 'deployed' ? 'deployed' : status === 'completed' ? 'completed' : status === 'testing' ? 'testing' : status === 'paused' ? 'paused' : 'progress')).checked = true;
+  const info = log ? parseInfo(log.info) : {};
+  renderExtraFields(info);
+  document.getElementById('fPassword').value = '';
+  m.style.display = 'flex';
+}
+
+function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+async function submitLog(e) {
+  e.preventDefault();
+  const editId = document.getElementById('editId').value;
+  const appName = document.getElementById('fAppName').value.trim();
+  const version = document.getElementById('fVersion').value.trim();
+  const summary = document.getElementById('fSummary').value.trim();
+  const tags = document.getElementById('fTags').value.trim();
+  const status = document.querySelector('input[name="status"]:checked')?.value || 'in_progress';
+  const extraObj = getExtraFields();
+  const password = document.getElementById('fPassword').value;
+
+  if (!appName || !summary) { showToast('กรุณากรอกชื่อแอปและสรุป', 'error'); return; }
+
+  closeAddModal();
+  showLoading(true);
+  try {
+    const logData = {
+      record_type: 'log',
+      app_name: appName,
+      version: version || '',
+      summary,
+      tags: tags || '',
+      status,
+      info: JSON.stringify(extraObj),
+      created_at: new Date().toISOString()
+    };
+
+    if (editId) {
+      const result = await window.dataSdk.update({ __backendId: editId, ...logData });
+      if (result.isOk) {
+        showToast('แก้ไขสำเร็จ', 'success');
+      } else {
+        showToast('แก้ไขไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    } else {
+      const result = await window.dataSdk.create(logData);
+      if (result.isOk) {
+        showToast('บันทึกสำเร็จ', 'success');
+      } else {
+        showToast('บันทึกไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    }
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด', 'error');
+    showLoading(false);
+  }
+}
+
+// ===== PROJECTS =====
+function updateProjectFilter() {
+  const sel = document.getElementById('fAppName');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- เลือกโปรเจค --</option>' + 
+    (allProjects || []).map(p => `<option value="${esc(p.app_name)}">${esc(p.app_name)}</option>`).join('');
+  sel.value = current;
+}
+
+function openProjectModal() {
+  document.getElementById('editProjectId').value = '';
+  document.getElementById('projectModalTitle').textContent = 'สร้างโปรเจคใหม่';
+  document.getElementById('projectForm').reset();
+  document.getElementById('pStatus_progress').checked = true;
+  document.getElementById('projectModal').style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeProjectModal() {
+  document.getElementById('projectModal').style.display = 'none';
+}
+
+function showNewProjectForm() {
+  closeAddModal();
+  openProjectModal();
+}
+
+async function submitProject(e) {
+  e.preventDefault();
+  const editId = document.getElementById('editProjectId').value;
+  const name = document.getElementById('pName').value.trim();
+  const description = document.getElementById('pDescription').value.trim();
+  const startDate = document.getElementById('pStartDate').value;
+  const techStack = document.getElementById('pTechStack').value.trim();
+  const tags = document.getElementById('pTags').value.trim();
+
+  if (!name) { showToast('กรุณากรอกชื่อโปรเจค', 'error'); return; }
+
+  closeProjectModal();
+  showLoading(true);
+
+  try {
+    const projectData = {
+      record_type: 'project',
+      app_name: name,
+      description,
+      start_date: startDate,
+      tech_stack: techStack,
+      tags: tags || '',
+      created_at: new Date().toISOString()
+    };
+
+    if (editId) {
+      const result = await window.dataSdk.update({ __backendId: editId, ...projectData });
+      if (result.isOk) {
+        showToast('อัปเดตโปรเจคสำเร็จ', 'success');
+      } else {
+        showToast('อัปเดตโปรเจคไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    } else {
+      const result = await window.dataSdk.create(projectData);
+      if (result.isOk) {
+        showToast('สร้างโปรเจคสำเร็จ', 'success');
+      } else {
+        showToast('สร้างโปรเจคไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    }
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด', 'error');
+    showLoading(false);
+  }
+}
+function renderDemo() {
+  allLogs = [
+    { id: 1, app_name: 'MyApp', version: '2.1.0', summary: 'เพิ่มระบบ authentication ด้วย JWT และ refresh token เพื่อเพิ่มความปลอดภัย', tags: 'feature,security', status: 'completed', date: new Date().toISOString(), info: '{"hours":"4","complexity":"high"}' },
+    { id: 2, app_name: 'API Gateway', version: '1.0.3', summary: 'แก้บัก rate limiter ที่นับจำนวน request ผิดพลาดทำให้ผู้ใช้โดนปิดกั้น', tags: 'bugfix,performance', status: 'deployed', date: new Date(Date.now()-86400000).toISOString(), info: '{"hours":"2","priority":"critical"}' },
+    { id: 3, app_name: 'Dashboard', version: '3.0.0', summary: 'ออกแบบ UI ใหม่ทั้งหมด ใช้ design system ใหม่ให้สวยงามและเป็นระเบียบ', tags: 'refactor,ui', status: 'in_progress', date: new Date(Date.now()-172800000).toISOString(), info: '{"designer":"Ploy","completion":"65%"}' },
+    { id: 4, app_name: 'MyApp', version: '2.0.9', summary: 'เพิ่ม unit test สำหรับ payment module ครอบคลุม 95% ของโค้ด', tags: 'testing', status: 'testing', date: new Date(Date.now()-259200000).toISOString(), info: '{"coverage":"95%","test_count":"48"}' },
+    { id: 5, app_name: 'ChatBot', version: '0.5.0', summary: 'Prototype chatbot ใช้ GPT-4 API สำหรับตอบคำถามลูกค้าแบบ real-time', tags: 'feature,ai', status: 'paused', date: new Date(Date.now()-432000000).toISOString(), info: '{"model":"gpt-4","accuracy":"87%"}' },
+  ];
+  showToast('📝 โหมดตัวอย่าง — ตั้งค่า GAS_URL เพื่อเชื่อมต่อจริง', 'info');
+  renderAll();
+}
+
+// ===== VIEW SWITCHER =====
+function switchView(view) {
+  currentView = view;
+  document.getElementById('cardsView').style.display = view === 'cards' ? '' : 'none';
+  document.getElementById('calendarView').style.display = view === 'calendar' ? '' : 'none';
+  document.getElementById('viewCards').className = view === 'cards' ? 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all' : 'px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all';
+  document.getElementById('viewCalendar').className = view === 'calendar' ? 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all' : 'px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all';
+  if (view === 'calendar') renderCalendar();
+  lucide.createIcons();
+}
+
+function prevMonth() {
+  currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const year = currentCalendarMonth.getFullYear();
+  const month = currentCalendarMonth.getMonth();
+  const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  document.getElementById('monthTitle').textContent = `${monthNames[month]} ${year + 543}`;
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const logsMap = {};
+  allLogs.forEach(log => {
+    const d = log.date ? new Date(log.date).toISOString().split('T')[0] : null;
+    if (d) {
+      if (!logsMap[d]) logsMap[d] = [];
+      logsMap[d].push(log);
+    }
+  });
+  
+  const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  let html = dayNames.map(d => `<div class="text-center py-2 font-bold text-slate-600 text-xs">${d}</div>`).join('');
+  
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="text-center py-2"></div>';
+  }
+  
+  const today = new Date().toISOString().split('T')[0];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const dateStr = date.toISOString().split('T')[0];
+    const logs = logsMap[dateStr] || [];
+    const isToday = dateStr === today;
+    const hasLogs = logs.length > 0;
+    html += `<div class="text-center py-2 px-1 rounded-lg transition-all cursor-pointer ${isToday ? 'bg-blue-600 text-white font-bold' : hasLogs ? 'bg-emerald-100 text-emerald-900 font-semibold' : 'text-slate-700 hover:bg-slate-100'}" title="${logs.length} บันทึก" onclick="if(${hasLogs})alert('${logs.map(l => l.app_name + ': ' + l.summary.substring(0, 30)).join('\\n')}')">${d}${hasLogs ? '<div class="text-xs">●</div>' : ''}</div>`;
+  }
+  
+  document.getElementById('calendarGrid').innerHTML = html;
+  
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const monthLogs = allLogs.filter(l => {
+    const d = new Date(l.date || '');
+    return d >= monthStart && d <= monthEnd;
+  });
+  
+  const statusCount = {
+    in_progress: 0,
+    completed: 0,
+    testing: 0,
+    deployed: 0,
+    paused: 0
+  };
+  
+  monthLogs.forEach(l => {
+    if (statusCount.hasOwnProperty(l.status)) statusCount[l.status]++;
+  });
+  
+  const statLabels = {
+    in_progress: '🔨 กำลังพัฒนา',
+    completed: '✅ เสร็จแล้ว',
+    testing: '🧪 ทดสอบ',
+    deployed: '🚀 Deploy',
+    paused: '⏸️ พักไว้'
+  };
+  
+  const statsHtml = Object.entries(statusCount).map(([status, count]) => 
+    `<div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-3 border border-slate-200 text-center">
+      <p class="text-xs text-slate-600 mb-1">${statLabels[status]}</p>
+      <p class="text-2xl font-bold text-slate-900">${count}</p>
+    </div>`
+  ).join('');
+  
+  document.getElementById('monthStats').innerHTML = statsHtml;
+}
+
+// ===== DEMO DATA =====
+function renderDemo() {
+  allLogs = [
+    { __backendId: '1', record_type: 'log', app_name: 'MyApp', version: '2.1.0', summary: 'เพิ่มระบบ authentication ด้วย JWT และ refresh token เพื่อเพิ่มความปลอดภัย', tags: 'feature,security', status: 'completed', created_at: new Date().toISOString(), info: '{"hours":"4","complexity":"high"}' },
+    { __backendId: '2', record_type: 'log', app_name: 'API Gateway', version: '1.0.3', summary: 'แก้บัก rate limiter ที่นับจำนวน request ผิดพลาด', tags: 'bugfix,performance', status: 'deployed', created_at: new Date(Date.now()-86400000).toISOString(), info: '{"hours":"2","priority":"critical"}' },
+    { __backendId: '3', record_type: 'log', app_name: 'Dashboard', version: '3.0.0', summary: 'ออกแบบ UI ใหม่ทั้งหมด ใช้ design system ใหม่', tags: 'refactor,ui', status: 'in_progress', created_at: new Date(Date.now()-172800000).toISOString(), info: '{"designer":"Ploy","completion":"65%"}' },
+  ];
+  allProjects = [
+    { __backendId: 'p1', record_type: 'project', app_name: 'MyApp', summary: 'Web Application', version: '2024-01-01', tags: 'frontend,backend', status: 'in_progress', info: '{"tech_stack":"React, Node.js"}', created_at: new Date().toISOString() },
+    { __backendId: 'p2', record_type: 'project', app_name: 'API Gateway', summary: 'API Service', version: '2024-01-05', tags: 'backend', status: 'in_progress', info: '{"tech_stack":"Node.js, Express"}', created_at: new Date().toISOString() },
+  ];
+  showToast('📝 Demo mode - Data SDK ready', 'info');
+  renderAll();
+}
+
+// ===== INIT =====
+initDataSDK();
+fetchLogs();
+lucide.createIcons();
+  </script>
+  <div class="toast-container" id="toastContainer"></div><!-- Loading Overlay -->
+  <div id="loadingOverlay" class="modal-overlay" style="display:none">
+   <div class="text-center">
+    <div class="loading-spinner mx-auto mb-4"></div>
+    <p class="text-slate-600 text-sm font-medium">กำลังโหลดข้อมูล...</p>
+   </div>
+  </div><!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+     <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg"><i data-lucide="book-open" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+       <h1 id="pageTitle" class="text-xl font-bold text-slate-900">Dev Log Portfolio</h1>
+       <p id="authorName" class="text-xs text-slate-500 font-medium">Your Name</p>
+      </div>
+     </div>
+     <div class="flex items-center gap-2"><button id="addBtn" onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all shadow-md hover:shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i><span class="hidden sm:inline">เพิ่ม Log</span></button> <button id="refreshBtn" onclick="refreshData()" class="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all" title="รีเฟรช"> <i data-lucide="refresh-cw" class="w-4 h-4"></i> </button> <button onclick="window.print()" class="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all hidden sm:block" title="พิมพ์/บันทึกเป็น PDF"> <i data-lucide="printer" class="w-4 h-4"></i> </button>
+     </div>
+    </div><!-- Search Area -->
+    <div class="search-area flex flex-wrap gap-2">
+     <div class="relative flex-1 min-w-[240px]"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i> <input id="searchInput" type="text" placeholder="ค้นหาชื่อแอป, รายละเอียด..." class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 search-glow focus:outline-none focus:bg-white transition-all" oninput="filterCards()">
+     </div><select id="appFilter" onchange="filterCards()" class="px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">ทุกแอป</option> </select> <select id="statusFilter" onchange="filterCards()" class="px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">ทุกสถานะ</option> <option value="in_progress">🔨 กำลังพัฒนา</option> <option value="completed">✅ เสร็จแล้ว</option> <option value="testing">🧪 ทดสอบ</option> <option value="deployed">🚀 Deploy แล้ว</option> <option value="paused">⏸️ พักไว้</option> </select>
+    </div>
+   </div>
+  </header><!-- Stats Bar -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+     <p class="text-xs font-semibold text-blue-600 mb-1">Total Logs</p>
+     <p class="text-3xl font-bold text-blue-900" id="statTotal">0</p>
+    </div>
+    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
+     <p class="text-xs font-semibold text-indigo-600 mb-1">แอปทั้งหมด</p>
+     <p class="text-3xl font-bold text-indigo-900" id="statApps">0</p>
+    </div>
+    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
+     <p class="text-xs font-semibold text-emerald-600 mb-1">วันนี้</p>
+     <p class="text-3xl font-bold text-emerald-900" id="statToday">0</p>
+    </div>
+    <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
+     <p class="text-xs font-semibold text-amber-600 mb-1">สัปดาห์นี้</p>
+     <p class="text-3xl font-bold text-amber-900" id="statWeek">0</p>
+    </div>
+   </div>
+  </div><!-- Cards Grid -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+   <!-- View Toggles -->
+   <div class="flex gap-2 mb-6 flex-wrap">
+    <button id="viewCards" onclick="switchView('cards')" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all">📋 บัตร</button> <button id="viewCalendar" onclick="switchView('calendar')" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all">📅 ปฏิทิน</button>
+   </div><!-- Cards View -->
+   <div id="cardsView">
+    <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+     <p id="emptyMsg" class="col-span-full text-center text-slate-500 py-20 text-sm">ยังไม่มีบันทึกการพัฒนา — กดปุ่ม "เพิ่ม Log" เพื่อเริ่มต้น</p>
+    </div>
+   </div><!-- Calendar View -->
+   <div id="calendarView" style="display:none">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+     <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+      <button onclick="prevMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+      <h3 id="monthTitle" class="text-lg font-bold">January 2024</h3><button onclick="nextMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+     </div>
+     <div class="p-4">
+      <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+       <!-- Calendar days will be rendered here -->
+      </div>
+      <div id="calendarLegend" class="mt-6 pt-4 border-t border-slate-200">
+       <p class="text-sm font-semibold text-slate-900 mb-3">สถิติการบันทึกในเดือนนี้</p>
+       <div id="monthStats" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Stats will be rendered here -->
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Add/Edit Modal -->
+  <div id="addModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAddModal()">
+   <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+     <h2 class="text-xl font-bold text-slate-900" id="modalTitle">เพิ่มบันทึกการพัฒนา</h2><button onclick="closeAddModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
+    </div>
+    <form id="logForm" onsubmit="submitLog(event)"><input type="hidden" id="editId" value="">
+     <div class="space-y-4">
+      <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">ชื่อแอป / โปรเจค *</label> <input id="fAppName" type="text" required class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น MyApp, API Gateway">
+      </div>
+      <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">เวอร์ชัน</label> <input id="fVersion" type="text" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น 1.0.0">
+      </div>
+      <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">สรุปสิ่งที่ทำ *</label> <textarea id="fSummary" required rows="3" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="อธิบายสิ่งที่พัฒนาวันนี้..."></textarea>
+      </div>
+      <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">แท็ก <span class="text-slate-500 font-normal">(คั่นด้วยคอมมา)</span></label> <input id="fTags" type="text" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="เช่น feature, bugfix, refactor, security">
+      </div>
+      <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">สถานะ</label> <select id="fStatus" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"> <option value="in_progress">🔨 กำลังพัฒนา</option> <option value="completed">✅ เสร็จแล้ว</option> <option value="testing">🧪 ทดสอบ</option> <option value="deployed">🚀 Deploy แล้ว</option> <option value="paused">⏸️ พักไว้ก่อน</option> </select>
+      </div>
+      <div><label class="block text-sm font-semibold text-slate-900 mb-2">ข้อมูลเพิ่มเติม <span class="text-slate-500 font-normal">(ทำให้เพิ่ม/ลด ได้)</span></label>
+       <div id="extraFields" class="space-y-2 mb-2"></div><button type="button" onclick="addExtraField()" class="text-sm px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-medium transition-all"><i data-lucide="plus" class="w-3 h-3 inline mr-1"></i>เพิ่มฟิลด์</button>
+      </div>
+      <div><label class="block text-sm font-semibold text-slate-900 mb-1.5">รหัสผ่าน *</label> <input id="fPassword" type="password" required class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="รหัสผ่านสำหรับบันทึก">
+      </div>
+     </div>
+     <div class="flex gap-3 mt-6"><button type="submit" id="submitBtn" class="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md"><i data-lucide="save" class="w-4 h-4"></i> บันทึก </button> <button type="button" onclick="closeAddModal()" class="px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-all">ยกเลิก</button>
+     </div>
+    </form>
+   </div>
+  </div><!-- Detail Modal -->
+  <div id="detailModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDetailModal()">
+   <div class="modal-box max-w-2xl max-h-[70vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4 sticky -top-8 -mx-8 px-8 py-4 bg-white border-b border-slate-200">
+     <h2 class="text-xl font-bold text-slate-900" id="detailTitle">รายละเอียด</h2><button onclick="closeDetailModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
+    </div>
+    <div id="detailContent" class="space-y-4 text-sm text-slate-700"></div>
+    <div class="mt-6 flex gap-2 pt-4 border-t border-slate-200"><button onclick="editFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-all"><i data-lucide="edit" class="w-4 h-4"></i> แก้ไข</button> <button onclick="deleteFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> ลบ</button>
+    </div>
+   </div>
+  </div><!-- Delete Confirm Modal -->
+  <div id="deleteModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDeleteModal()">
+   <div class="modal-box max-w-sm text-center">
+    <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+     <i data-lucide="alert-triangle" class="w-8 h-8 text-red-600"></i>
+    </div>
+    <h3 class="text-lg font-bold text-slate-900 mb-2">ยืนยันการลบ?</h3>
+    <p class="text-slate-600 text-sm mb-5">การลบบันทึกนี้ไม่สามารถกู้คืนได้</p>
+    <div><label class="block text-sm text-slate-700 font-medium mb-1.5 text-left">รหัสผ่าน</label> <input id="deletePassword" type="password" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all mb-5">
+    </div>
+    <div class="flex gap-3 justify-center"><button onclick="confirmDelete()" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-all">ลบเลย</button> <button onclick="closeDeleteModal()" class="px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-all">ยกเลิก</button>
+    </div>
+   </div>
+  </div>
+  <script>
+// ===== CONFIG & STATE =====
+let allLogs = [];
+let allProjects = [];
+let currentDetailLog = null;
+let currentView = 'cards';
+let currentCalendarMonth = new Date();
+let extraFieldCount = 0;
+
+// ===== ELEMENT SDK =====
+const defaultConfig = {
+  page_title: 'Dev Log Portfolio',
+  company_name: 'Your Name'
+};
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const title = document.getElementById('pageTitle');
+    const author = document.getElementById('authorName');
+    title.textContent = config.page_title || defaultConfig.page_title;
+    author.textContent = config.company_name || defaultConfig.company_name;
+    if (config.master_password && config.master_password.trim()) {
+      masterPassword = config.master_password.trim();
+    }
+  },
+  mapToCapabilities: (config) => ({
+    recolorables: [],
+    borderables: [],
+    fontEditable: undefined,
+    fontSizeable: undefined
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['page_title', config.page_title || defaultConfig.page_title],
+    ['company_name', config.company_name || defaultConfig.company_name],
+    ['master_password', config.master_password || '']
+  ])
+});
+
+// ===== TOAST =====
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ===== LOADING =====
+function showLoading(show) {
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+// ===== JSONP =====
+let jsonpCounter = 0;
+function jsonpRequest(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_jsonp_cb_' + (++jsonpCounter) + '_' + Date.now();
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      if (s.parentNode) s.parentNode.removeChild(s);
+      reject(new Error('Timeout'));
+    }, 15000);
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (s.parentNode) s.parentNode.removeChild(s);
+      resolve(data);
+    };
+    params.callback = cbName;
+    const qs = Object.entries(params).map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+    const s = document.createElement('script');
+    s.src = GAS_URL + '?' + qs;
+    s.onerror = () => { clearTimeout(timeout); reject(new Error('Network error')); };
+    document.body.appendChild(s);
+  });
+}
+
+// ===== DATA =====
+async function fetchLogs(force = false) {
+  if (!GAS_URL) {
+    renderDemo();
+    return;
+  }
+  if (!force && cache.data && Date.now() - cache.ts < cache.ttl) {
+    allLogs = cache.data;
+    renderAll();
+    return;
+  }
+  showLoading(true);
+  try {
+    const res = await jsonpRequest({ action: 'getLogs' });
+    if (res.success) {
+      allLogs = res.data || [];
+      cache.data = allLogs;
+      cache.ts = Date.now();
+      renderAll();
+      showToast('โหลดข้อมูลสำเร็จ', 'success');
+    } else {
+      showToast(res.error || 'โหลดข้อมูลผิดพลาด', 'error');
+    }
+  } catch(e) {
+    showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+  }
+  showLoading(false);
+}
+
+function refreshData() { fetchLogs(true); }
+
+// ===== RENDER =====
+const statusMap = {
+  in_progress: { emoji: '🔨', label: 'กำลังพัฒนา', class: 'bg-blue-100 text-blue-800 border-blue-300' },
+  completed: { emoji: '✅', label: 'เสร็จแล้ว', class: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  testing: { emoji: '🧪', label: 'ทดสอบ', class: 'bg-amber-100 text-amber-800 border-amber-300' },
+  deployed: { emoji: '🚀', label: 'Deploy แล้ว', class: 'bg-purple-100 text-purple-800 border-purple-300' },
+  paused: { emoji: '⏸️', label: 'พักไว้', class: 'bg-slate-100 text-slate-800 border-slate-300' }
+};
+
+function tagColorClass(tag) {
+  const t = tag.toLowerCase().trim();
+  if (t.includes('feature')) return 'tag-feature';
+  if (t.includes('bug') || t.includes('fix')) return 'tag-bugfix';
+  if (t.includes('refactor')) return 'tag-refactor';
+  if (t.includes('test')) return 'tag-testing';
+  if (t.includes('security')) return 'tag-security';
+  return 'tag-default';
+}
+
+function renderAll() {
+  updateStats();
+  updateAppFilter();
+  filterCards();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allLogs.length;
+  const apps = new Set(allLogs.map(l => l.app_name));
+  document.getElementById('statApps').textContent = apps.size;
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('statToday').textContent = allLogs.filter(l => (l.date || '').slice(0, 10) === today).length;
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  document.getElementById('statWeek').textContent = allLogs.filter(l => (l.date || '') >= weekAgo).length;
+}
+
+function updateAppFilter() {
+  const sel = document.getElementById('appFilter');
+  const current = sel.value;
+  const apps = [...new Set(allLogs.map(l => l.app_name))].sort();
+  sel.innerHTML = '<option value="">ทุกแอป</option>' + apps.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  sel.value = current;
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const app = document.getElementById('appFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  let filtered = allLogs;
+  if (app) filtered = filtered.filter(l => l.app_name === app);
+  if (status) filtered = filtered.filter(l => l.status === status);
+  if (q) filtered = filtered.filter(l =>
+    (l.app_name || '').toLowerCase().includes(q) ||
+    (l.summary || '').toLowerCase().includes(q) ||
+    (l.tags || '').toLowerCase().includes(q)
+  );
+  filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  renderCards(filtered);
+}
+
+function renderCards(logs) {
+  const grid = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyMsg');
+  if (!logs.length) {
+    grid.innerHTML = '';
+    grid.appendChild(empty);
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = logs.map((log, i) => {
+    const st = statusMap[log.status] || statusMap.in_progress;
+    const tags = (log.tags || '').split(',').filter(t => t.trim()).map(t => {
+      const tagText = t.trim();
+      return `<span class="tag ${tagColorClass(tagText)}">${esc(tagText)}</span>`;
+    }).join('');
+    const info = parseInfo(log.info);
+    const extraKeys = Object.keys(info).slice(0, 2).map(k =>
+      `<div class="flex justify-between py-1.5 border-b border-slate-200"><span class="text-slate-600 text-xs">${esc(k)}</span><span class="text-slate-800 mono text-xs font-medium">${esc(String(info[k]).slice(0,25))}</span></div>`
+    ).join('');
+    const dayOfWeek = formatDayOfWeek(log.date);
+    const dateDisplay = formatDateOnly(log.date);
+    return `<div class="info-card rounded-xl p-5 cursor-pointer card-enter shadow-sm" style="animation-delay:${i*40}ms" onclick='openDetail(${log.id})'>
+      <div class="card-content">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3 flex-1">
+            <span class="text-3xl">${st.emoji}</span>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-slate-900 text-base truncate">${esc(log.app_name)}</h3>
+              ${log.version ? `<span class="mono text-xs text-slate-500 font-medium">v${esc(log.version)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <p class="text-slate-700 text-sm mb-4 line-clamp-3 leading-relaxed font-medium">${esc(log.summary)}</p>
+        <div class="flex flex-wrap gap-1.5 mb-4">${tags}<span class="tag border ${st.class}">${st.label}</span></div>
+        ${extraKeys ? `<div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-3 mb-4 text-xs border border-slate-200 space-y-1">${extraKeys}</div>` : ''}
+      </div>
+      <div class="pt-4 border-t border-slate-200 mt-auto">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-slate-600">
+            <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+            <span class="text-xs font-semibold">${dateDisplay}</span>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">${dayOfWeek}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function parseInfo(str) {
+  if (!str) return {};
+  try { return JSON.parse(str); } catch(e) { return {}; }
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  try {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return d; }
+}
+
+function formatDateOnly(d) {
+  if (!d) return '-';
+  try {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch(e) { return d; }
+}
+
+function formatDayOfWeek(d) {
+  if (!d) return '';
+  try {
+    const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+    const dt = new Date(d);
+    return days[dt.getDay()];
+  } catch(e) { return ''; }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// ===== DETAIL =====
+function openDetail(id) {
+  const log = allLogs.find(l => l.id == id);
+  if (!log) return;
+  currentDetailLog = log;
+  const st = statusMap[log.status] || statusMap.in_progress;
+  const info = parseInfo(log.info);
+  const infoHtml = Object.keys(info).length ? Object.entries(info).map(([k,v]) =>
+    `<div class="flex justify-between py-2 border-b border-slate-200"><span class="text-slate-700 font-medium">${esc(k)}</span><span class="text-slate-900 mono text-sm font-semibold">${esc(String(v))}</span></div>`
+  ).join('') : '<p class="text-slate-500 text-sm italic">ไม่มีข้อมูลเพิ่มเติม</p>';
+
+  document.getElementById('detailTitle').textContent = log.app_name;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">${st.emoji}</span>
+          <div>
+            <h3 class="font-bold text-slate-900 text-lg">${esc(log.app_name)}</h3>
+            ${log.version ? `<p class="mono text-xs text-slate-600">v${esc(log.version)}</p>` : ''}
+          </div>
+        </div>
+        <span class="tag border-2 ${st.class} text-sm font-bold">${st.label}</span>
+      </div>
+      <p class="text-slate-700 leading-relaxed text-base">${esc(log.summary)}</p>
+    </div>
+    
+    <div class="space-y-2">
+      <p class="text-slate-700 font-semibold text-sm">Tags:</p>
+      <div class="flex flex-wrap gap-2">${(log.tags||'').split(',').filter(t=>t.trim()).map(t=>`<span class="tag ${tagColorClass(t.trim())}">${esc(t.trim())}</span>`).join('')}</div>
+    </div>
+    
+    ${Object.keys(info).length ? `
+    <div class="border-t-2 border-slate-200 pt-4">
+      <p class="text-slate-700 font-semibold text-sm mb-3">ข้อมูลเพิ่มเติม:</p>
+      <div class="bg-slate-50 rounded-lg p-4 text-xs">${infoHtml}</div>
+    </div>
+    ` : ''}
+    
+    <div class="flex items-center gap-2 pt-2 text-slate-600 text-sm">
+      <i data-lucide="calendar" class="w-4 h-4"></i> 
+      <span>${esc(formatDate(log.date))}</span>
+    </div>
+  `;
+  document.getElementById('detailModal').style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+function editFromDetail() {
+  if (!currentDetailLog) return;
+  closeDetailModal();
+  openAddModal(currentDetailLog);
+}
+
+function deleteFromDetail() {
+  if (!currentDetailLog) return;
+  closeDetailModal();
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('deletePassword').value = '';
+}
+
+function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+
+async function confirmDelete() {
+  const pw = document.getElementById('deletePassword').value;
+  if (!pw) { showToast('กรุณาใส่รหัสผ่าน', 'error'); return; }
+  if (!currentDetailLog) return;
+  showLoading(true);
+  closeDeleteModal();
+  try {
+    const res = await jsonpRequest({ action: 'deleteLog', id: currentDetailLog.id, password: pw });
+    if (res.success) {
+      showToast('ลบสำเร็จ', 'success');
+      cache.data = null;
+      fetchLogs(true);
+    } else {
+      showToast(res.error || 'ลบไม่สำเร็จ', 'error');
+      showLoading(false);
+    }
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด', 'error');
+    showLoading(false);
+  }
+}
+
+// ===== ADD/EDIT =====
+function openAddModal(log) {
+  const m = document.getElementById('addModal');
+  document.getElementById('modalTitle').textContent = log ? 'แก้ไขบันทึก' : 'เพิ่มบันทึกการพัฒนา';
+  document.getElementById('editId').value = log ? log.id : '';
+  document.getElementById('fAppName').value = log ? log.app_name : '';
+  document.getElementById('fVersion').value = log ? (log.version || '') : '';
+  document.getElementById('fSummary').value = log ? log.summary : '';
+  document.getElementById('fTags').value = log ? (log.tags || '') : '';
+  document.getElementById('fStatus').value = log ? (log.status || 'in_progress') : 'in_progress';
+  const info = log ? parseInfo(log.info) : {};
+  document.getElementById('fExtra').value = Object.keys(info).length ? JSON.stringify(info, null, 2) : '';
+  document.getElementById('fPassword').value = '';
+  m.style.display = 'flex';
+}
+
+function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+async function submitLog(e) {
+  e.preventDefault();
+  const editId = document.getElementById('editId').value;
+  const appName = document.getElementById('fAppName').value.trim();
+  const version = document.getElementById('fVersion').value.trim();
+  const summary = document.getElementById('fSummary').value.trim();
+  const tags = document.getElementById('fTags').value.trim();
+  const status = document.querySelector('input[name="status"]:checked').value;
+  const extraObj = getExtraFields();
+  const password = document.getElementById('fPassword').value;
+
+  if (!appName || !summary) { showToast('กรุณาเลือกโปรเจคและสรุป', 'error'); return; }
+  if (!password) { showToast('กรุณาใส่รหัสผ่าน', 'error'); return; }
+
+  closeAddModal();
+  showLoading(true);
+  try {
+    const logData = {
+      record_type: 'log',
+      app_name: appName,
+      version: version || '',
+      summary,
+      tags: tags || '',
+      status,
+      info: JSON.stringify(extraObj),
+      created_at: new Date().toISOString()
+    };
+
+    if (editId) {
+      const result = await window.dataSdk.update({ __backendId: editId, ...logData });
+      if (result.isOk) {
+        showToast('แก้ไขสำเร็จ', 'success');
+      } else {
+        showToast('แก้ไขไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    } else {
+      const result = await window.dataSdk.create(logData);
+      if (result.isOk) {
+        showToast('บันทึกสำเร็จ', 'success');
+      } else {
+        showToast('บันทึกไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    }
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด', 'error');
+    showLoading(false);
+  }
+}
+
+function updateProjectFilter() {
+  const sel = document.getElementById('fAppName');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- เลือกโปรเจค --</option>' + 
+    (allProjects || []).map(p => `<option value="${esc(p.app_name)}">${esc(p.app_name)}</option>`).join('');
+  sel.value = current;
+}
+
+function openProjectModal() {
+  document.getElementById('editProjectId').value = '';
+  document.getElementById('projectModalTitle').textContent = 'สร้างโปรเจคใหม่';
+  document.getElementById('projectForm').reset();
+  document.getElementById('projectModal').style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeProjectModal() {
+  document.getElementById('projectModal').style.display = 'none';
+}
+
+function showNewProjectForm() {
+  closeAddModal();
+  openProjectModal();
+}
+
+async function submitProject(e) {
+  e.preventDefault();
+  const editId = document.getElementById('editProjectId').value;
+  const name = document.getElementById('pName').value.trim();
+  const description = document.getElementById('pDescription').value.trim();
+  const startDate = document.getElementById('pStartDate').value;
+  const techStack = document.getElementById('pTechStack').value.trim();
+  const tags = document.getElementById('pTags').value.trim();
+
+  if (!name) { showToast('กรุณากรอกชื่อโปรเจค', 'error'); return; }
+
+  closeProjectModal();
+  showLoading(true);
+
+  try {
+    const projectData = {
+      record_type: 'project',
+      app_name: name,
+      summary: description,
+      version: startDate || '',
+      tags: tags || '',
+      status: techStack ? 'project' : 'in_progress',
+      info: JSON.stringify({ tech_stack: techStack }),
+      created_at: new Date().toISOString()
+    };
+
+    if (editId) {
+      const result = await window.dataSdk.update({ __backendId: editId, ...projectData });
+      if (result.isOk) {
+        showToast('อัปเดตโปรเจคสำเร็จ', 'success');
+      } else {
+        showToast('อัปเดตโปรเจคไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    } else {
+      const result = await window.dataSdk.create(projectData);
+      if (result.isOk) {
+        showToast('สร้างโปรเจคสำเร็จ', 'success');
+      } else {
+        showToast('สร้างโปรเจคไม่สำเร็จ', 'error');
+        showLoading(false);
+      }
+    }
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด', 'error');
+    showLoading(false);
+  }
+}
+
+// ===== VIEW SWITCHER =====
+function switchView(view) {
+  currentView = view;
+  document.getElementById('cardsView').style.display = view === 'cards' ? '' : 'none';
+  document.getElementById('calendarView').style.display = view === 'calendar' ? '' : 'none';
+  document.getElementById('viewCards').className = view === 'cards' ? 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all' : 'px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all';
+  document.getElementById('viewCalendar').className = view === 'calendar' ? 'px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all' : 'px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all';
+  if (view === 'calendar') renderCalendar();
+  lucide.createIcons();
+}
+
+function prevMonth() {
+  currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const year = currentCalendarMonth.getFullYear();
+  const month = currentCalendarMonth.getMonth();
+  const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  document.getElementById('monthTitle').textContent = `${monthNames[month]} ${year + 543}`;
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const logsMap = {};
+  allLogs.forEach(log => {
+    const d = log.date ? new Date(log.date).toISOString().split('T')[0] : null;
+    if (d) {
+      if (!logsMap[d]) logsMap[d] = [];
+      logsMap[d].push(log);
+    }
+  });
+  
+  const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  let html = dayNames.map(d => `<div class="text-center py-2 font-bold text-slate-600 text-xs">${d}</div>`).join('');
+  
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="text-center py-2"></div>';
+  }
+  
+  const today = new Date().toISOString().split('T')[0];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const dateStr = date.toISOString().split('T')[0];
+    const logs = logsMap[dateStr] || [];
+    const isToday = dateStr === today;
+    const hasLogs = logs.length > 0;
+    html += `<div class="text-center py-2 px-1 rounded-lg transition-all cursor-pointer ${isToday ? 'bg-blue-600 text-white font-bold' : hasLogs ? 'bg-emerald-100 text-emerald-900 font-semibold' : 'text-slate-700 hover:bg-slate-100'}" title="${logs.length} บันทึก" onclick="if(${hasLogs})alert('${logs.map(l => l.app_name + ': ' + l.summary.substring(0, 30)).join('\\n')}')">${d}${hasLogs ? '<div class="text-xs">●</div>' : ''}</div>`;
+  }
+  
+  document.getElementById('calendarGrid').innerHTML = html;
+  
+  // Render stats
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const monthLogs = allLogs.filter(l => {
+    const d = new Date(l.date || '');
+    return d >= monthStart && d <= monthEnd;
+  });
+  
+  const statusCount = {
+    in_progress: 0,
+    completed: 0,
+    testing: 0,
+    deployed: 0,
+    paused: 0
+  };
+  
+  monthLogs.forEach(l => {
+    if (statusCount.hasOwnProperty(l.status)) statusCount[l.status]++;
+  });
+  
+  const statLabels = {
+    in_progress: '🔨 กำลังพัฒนา',
+    completed: '✅ เสร็จแล้ว',
+    testing: '🧪 ทดสอบ',
+    deployed: '🚀 Deploy',
+    paused: '⏸️ พักไว้'
+  };
+  
+  const statsHtml = Object.entries(statusCount).map(([status, count]) => 
+    `<div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-3 border border-slate-200 text-center">
+      <p class="text-xs text-slate-600 mb-1">${statLabels[status]}</p>
+      <p class="text-2xl font-bold text-slate-900">${count}</p>
+    </div>`
+  ).join('');
+  
+  document.getElementById('monthStats').innerHTML = statsHtml;
+}
+
+// ===== INIT =====
+initDataSDK();
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e4d5d9bb056732e',t:'MTc3NDkzOTI1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html><!-- Toast Container -->

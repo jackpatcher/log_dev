@@ -7,29 +7,9 @@
   <title>Dev Log Portfolio</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
+  <!-- <script src="https://unpkg.com/@amplication/element-sdk@latest/dist/element_sdk.umd.js"></script> -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
-  <style>
-*{font-family:'Sarabun','sans-serif'}
-code,.mono{font-family:'JetBrains Mono',monospace}
-html,body{height:100%;margin:0}
-.app-root{height:100%;overflow:auto;background:#fafbfd}
-.toast-container{position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem}
-.toast{padding:.875rem 1.5rem;border-radius:1rem;color:#fff;font-size:.875rem;font-weight:600;animation:slideIn .3s cubic-bezier(.34,.69,.7,1.43),fadeOut .3s ease 2.7s forwards;box-shadow:0 12px 48px rgba(0,0,0,.15);border-left:4px solid}
-.toast-success{background:linear-gradient(135deg,#10b981,#059669);border-left-color:#059669}
-.toast-error{background:linear-gradient(135deg,#ef4444,#dc2626);border-left-color:#dc2626}
-.toast-info{background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-left-color:#1d4ed8}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes fadeOut{to{opacity:0;transform:translateY(-10px)}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
-.modal-box{background:#fff;border:1px solid #e5e7eb;border-radius:1.25rem;padding:2rem;max-width:600px;width:90%;max-height:80%;overflow-y:auto;animation:scaleIn .2s ease;box-shadow:0 32px 96px rgba(0,0,0,.12)}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
-.loading-spinner{width:2.5rem;height:2.5rem;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.card-enter{animation:cardUp .5s ease both}
-@keyframes cardUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.info-card{background:#fff;border:1px solid #e5e7eb;transition:all .3s cubic-bezier(.34,.69,.7,1.43);position:relative;overflow:hidden;display:flex;flex-direction:column}
+<style>
 .info-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563eb,#7c3aed);opacity:0;transition:opacity .3s ease}
 .info-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,rgba(37,99,235,.05) 0%,transparent 70%);pointer-events:none}
 .info-card:hover{border-color:#bfdbfe;transform:translateY(-6px);box-shadow:0 25px 50px rgba(37,99,235,.12),0 0 1px rgba(37,99,235,.1)}
@@ -55,7 +35,7 @@ html,body{height:100%;margin:0}
 ::-webkit-scrollbar-thumb:hover{background:#94a3b8}
   </style>
   <style>body { box-sizing: border-box; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <!-- <script src="https://unpkg.com/@amplication/data-sdk@latest/dist/data_sdk.umd.js"></script> -->
  </head>
  <body class="h-full">
   <div class="app-root w-full" id="appRoot"><!-- Toast Container -->
@@ -176,7 +156,7 @@ html,body{height:100%;margin:0}
       <h2 class="text-xl font-bold text-slate-900" id="detailTitle">รายละเอียด</h2><button onclick="closeDetailModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
      </div>
      <div id="detailContent" class="space-y-4 text-sm text-slate-700"></div>
-     <div class="mt-6 flex gap-2 pt-4 border-t border-slate-200"><button onclick="editFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-all"><i data-lucide="edit" class="w-4 h-4"></i> แก้ไข</button> <button onclick="deleteFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> ลบ</button>
+    <div class="mt-6 flex gap-2 pt-4 border-t border-slate-200"><button onclick="editFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-all"><i data-lucide="pencil" class="w-4 h-4"></i> แก้ไข</button> <button onclick="deleteFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> ลบ</button>
      </div>
     </div>
    </div><!-- Project Modal -->
@@ -221,7 +201,7 @@ html,body{height:100%;margin:0}
   </div>
   <script>
 // ===== CONFIG =====
-const GAS_URL = '';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw7YvIS1mHx6i8g2d1BD-FfbYAdA5-OZqqB-bFPttWYRP74lfbJ8_skYhaQMNLjNWE/exec';
 
 // ===== STATE =====
 let allLogs = [];
@@ -234,32 +214,7 @@ let masterPassword = null;
 let extraFieldCount = 0;
 let currentMode = 'logs'; // 'logs' or 'projects'
 
-// ===== ELEMENT SDK =====
-const defaultConfig = {
-  page_title: 'Dev Log Portfolio',
-  company_name: 'Your Name',
-  master_password: ''
-};
-
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => {
-    const title = document.getElementById('pageTitle');
-    const author = document.getElementById('authorName');
-    title.textContent = config.page_title || defaultConfig.page_title;
-    author.textContent = config.company_name || defaultConfig.company_name;
-  },
-  mapToCapabilities: (config) => ({
-    recolorables: [],
-    borderables: [],
-    fontEditable: undefined,
-    fontSizeable: undefined
-  }),
-  mapToEditPanelValues: (config) => new Map([
-    ['page_title', config.page_title || defaultConfig.page_title],
-    ['company_name', config.company_name || defaultConfig.company_name]
-  ])
-});
+// ...SDK code removed...
 
 // ===== DATA SDK =====
 const dataHandler = {
@@ -295,14 +250,7 @@ function showLoading(show) {
 }
 
 // ===== DATA SDK =====
-const dataHandler = {
-  onDataChanged(data) {
-    allProjects = (data || []).filter(r => r.record_type === 'project');
-    allLogs = (data || []).filter(r => r.record_type === 'log');
-    updateProjectFilter();
-    filterCards();
-  }
-};
+// ...existing code...
 
 async function initDataSDK() {
   const result = await window.dataSdk.init(dataHandler);
@@ -315,13 +263,7 @@ async function initDataSDK() {
 }
 
 // ===== RENDER =====
-const statusMap = {
-  in_progress: { emoji: '🔨', label: 'กำลังพัฒนา', class: 'bg-blue-100 text-blue-800 border-blue-300' },
-  completed: { emoji: '✅', label: 'เสร็จแล้ว', class: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-  testing: { emoji: '🧪', label: 'ทดสอบ', class: 'bg-amber-100 text-amber-800 border-amber-300' },
-  deployed: { emoji: '🚀', label: 'Deploy แล้ว', class: 'bg-purple-100 text-purple-800 border-purple-300' },
-  paused: { emoji: '⏸️', label: 'พักไว้', class: 'bg-slate-100 text-slate-800 border-slate-300' }
-};
+// ...existing code...
 
 function tagColorClass(tag) {
   const t = tag.toLowerCase().trim();
@@ -860,59 +802,14 @@ function renderDemo() {
 }
 
 // ===== INIT =====
-initDataSDK();
-fetchLogs();
-lucide.createIcons();
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+  // SDK init and fetchLogs are handled in the previous DOMContentLoaded block
+});
   </script>
-  <div class="toast-container" id="toastContainer"></div><!-- Loading Overlay -->
-  <div id="loadingOverlay" class="modal-overlay" style="display:none">
-   <div class="text-center">
-    <div class="loading-spinner mx-auto mb-4"></div>
-    <p class="text-slate-600 text-sm font-medium">กำลังโหลดข้อมูล...</p>
-   </div>
-  </div><!-- Header -->
-  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm">
-   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
-     <div class="flex items-center gap-3">
-      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg"><i data-lucide="book-open" class="w-5 h-5 text-white"></i>
-      </div>
-      <div>
-       <h1 id="pageTitle" class="text-xl font-bold text-slate-900">Dev Log Portfolio</h1>
-       <p id="authorName" class="text-xs text-slate-500 font-medium">Your Name</p>
-      </div>
-     </div>
-     <div class="flex items-center gap-2"><button id="addBtn" onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all shadow-md hover:shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i><span class="hidden sm:inline">เพิ่ม Log</span></button> <button id="refreshBtn" onclick="refreshData()" class="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all" title="รีเฟรช"> <i data-lucide="refresh-cw" class="w-4 h-4"></i> </button> <button onclick="window.print()" class="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all hidden sm:block" title="พิมพ์/บันทึกเป็น PDF"> <i data-lucide="printer" class="w-4 h-4"></i> </button>
-     </div>
-    </div><!-- Search Area -->
-    <div class="search-area flex flex-wrap gap-2">
-     <div class="relative flex-1 min-w-[240px]"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i> <input id="searchInput" type="text" placeholder="ค้นหาชื่อแอป, รายละเอียด..." class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder-slate-500 search-glow focus:outline-none focus:bg-white transition-all" oninput="filterCards()">
-     </div><select id="appFilter" onchange="filterCards()" class="px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">ทุกแอป</option> </select> <select id="statusFilter" onchange="filterCards()" class="px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">ทุกสถานะ</option> <option value="in_progress">🔨 กำลังพัฒนา</option> <option value="completed">✅ เสร็จแล้ว</option> <option value="testing">🧪 ทดสอบ</option> <option value="deployed">🚀 Deploy แล้ว</option> <option value="paused">⏸️ พักไว้</option> </select>
-    </div>
-   </div>
-  </header><!-- Stats Bar -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-     <p class="text-xs font-semibold text-blue-600 mb-1">Total Logs</p>
-     <p class="text-3xl font-bold text-blue-900" id="statTotal">0</p>
-    </div>
-    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
-     <p class="text-xs font-semibold text-indigo-600 mb-1">แอปทั้งหมด</p>
-     <p class="text-3xl font-bold text-indigo-900" id="statApps">0</p>
-    </div>
-    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
-     <p class="text-xs font-semibold text-emerald-600 mb-1">วันนี้</p>
-     <p class="text-3xl font-bold text-emerald-900" id="statToday">0</p>
-    </div>
-    <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
-     <p class="text-xs font-semibold text-amber-600 mb-1">สัปดาห์นี้</p>
-     <p class="text-3xl font-bold text-amber-900" id="statWeek">0</p>
-    </div>
-   </div>
-  </div><!-- Cards Grid -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
-   <!-- View Toggles -->
+  <!-- Duplicate header/stats/search area removed -->
    <div class="flex gap-2 mb-6 flex-wrap">
     <button id="viewCards" onclick="switchView('cards')" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold transition-all">📋 บัตร</button> <button id="viewCalendar" onclick="switchView('calendar')" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-all">📅 ปฏิทิน</button>
    </div><!-- Cards View -->
@@ -975,7 +872,7 @@ lucide.createIcons();
      <h2 class="text-xl font-bold text-slate-900" id="detailTitle">รายละเอียด</h2><button onclick="closeDetailModal()" class="p-1 rounded-lg hover:bg-slate-100 transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-600"></i></button>
     </div>
     <div id="detailContent" class="space-y-4 text-sm text-slate-700"></div>
-    <div class="mt-6 flex gap-2 pt-4 border-t border-slate-200"><button onclick="editFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-all"><i data-lucide="edit" class="w-4 h-4"></i> แก้ไข</button> <button onclick="deleteFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> ลบ</button>
+    <div class="mt-6 flex gap-2 pt-4 border-t border-slate-200"><button onclick="editFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-all"><i data-lucide="pencil" class="w-4 h-4"></i> แก้ไข</button> <button onclick="deleteFromDetail()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> ลบ</button>
     </div>
    </div>
   </div><!-- Delete Confirm Modal -->
@@ -993,44 +890,7 @@ lucide.createIcons();
    </div>
   </div>
   <script>
-// ===== CONFIG & STATE =====
-let allLogs = [];
-let allProjects = [];
-let currentDetailLog = null;
-let currentView = 'cards';
-let currentCalendarMonth = new Date();
-let extraFieldCount = 0;
-
-// ===== ELEMENT SDK =====
-const defaultConfig = {
-  page_title: 'Dev Log Portfolio',
-  company_name: 'Your Name'
-};
-
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => {
-    const title = document.getElementById('pageTitle');
-    const author = document.getElementById('authorName');
-    title.textContent = config.page_title || defaultConfig.page_title;
-    author.textContent = config.company_name || defaultConfig.company_name;
-    if (config.master_password && config.master_password.trim()) {
-      masterPassword = config.master_password.trim();
-    }
-  },
-  mapToCapabilities: (config) => ({
-    recolorables: [],
-    borderables: [],
-    fontEditable: undefined,
-    fontSizeable: undefined
-  }),
-  mapToEditPanelValues: (config) => new Map([
-    ['page_title', config.page_title || defaultConfig.page_title],
-    ['company_name', config.company_name || defaultConfig.company_name],
-    ['master_password', config.master_password || '']
-  ])
-});
-
+ 
 // ===== TOAST =====
 function showToast(msg, type = 'info') {
   const c = document.getElementById('toastContainer');
